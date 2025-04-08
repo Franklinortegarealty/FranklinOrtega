@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calculadora Hipotecaria</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #000000;
+      color: #FFFFFF;
+    }
+    .container {
+      background-color: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #D4AF37;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #D4AF37;
+      border-radius: 5px;
+      background-color: #2a2a2a;
+      color: white;
+    }
+    button {
+      background-color: #D4AF37;
+      color: black;
+      font-weight: bold;
+    }
+    .resultado {
+      color: #D4AF37;
+      background-color: #2a2a2a;
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .leyenda {
+      font-size: 12px;
+      color: #D4AF37;
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid #D4AF37;
+    }
+    .nombre-empresa {
+      text-align: center;
+      color: #D4AF37;
+      font-size: 24px;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    .nombre-agente {
+      text-align: center;
+      color: #FFFFFF;
+      font-size: 24px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+ <h1>Calculadora de Crédito Hipotecario 🔑🏡💰🔑🏡💰🔑🏡💰🔑🏡💰</h1>
+    <div class="nombre-empresa">FORTE PRESTIGE GROUP</div>
+    <div class="nombre-agente">Franklin Ortega</div>
+
+    <!-- Campos de entrada -->
+    <label>Tipo de Préstamo:</label>
+    <select id="tipoPrestamo">
+      <option value="FHA">FHA</option>
+      <option value="VA">VA</option>
+      <option value="Convencional">Convencional</option>
+      <option value="Extranjero">Extranjero</option>
+    </select>
+
+    <label>Ingresos mensuales netos ($):</label>
+    <input type="number" id="ingresos" placeholder="Ejemplo: 5000">
+
+    <label>Deudas mensuales actuales ($):</label>
+    <input type="number" id="deudas" placeholder="Ejemplo: 800">
+
+    <label>Monto del préstamo ($)(No Incluyas Down Payment):</label>
+    <input type="number" id="monto" placeholder="Ejemplo: 200000">
+
+    <label>Tasa de interés anual (%):</label>
+    <input type="number" id="tasa" value="6">
+
+    <label>Plazo del préstamo (años):</label>
+    <input type="number" id="plazo" value="30">
+
+    <button onclick="calcular()">Calcular</button>
+
+    <!-- Resultados -->
+    <div id="resultados">
+      <div class="resultado">
+        <strong>Pago mensual estimado (PITI):</strong> $<span id="pago">0</span>
+        <div class="leyenda">*Incluye capital, interés, taxes (1%) y seguro (0.5%).</div>
+        <div class="leyenda">****Taxes y Seguro de la propiedad son datos aproximados </div>
+
+      </div>
+
+      <div class="resultado">
+        <strong>DTI (Debt to Income) actual:</strong> <span id="dtiActual">0</span>%
+      </div>
+
+      <div class="resultado">
+        <strong>DTI (Debt to Income) con hipoteca:</strong> <span id="dtiTotal">0</span>%
+      </div>
+
+      <div class="resultado">
+        <strong>Ingreso mínimo requerido:</strong> $<span id="ingresoMinimo">0</span>
+        <div class="leyenda">
+          📌 Límites DTI por programa:<br>
+          • FHA: 43% - 56.9%<br>
+          • VA: Sin límite fijo (evaluación residual)<br>
+          • Convencional: 45% - 50%<br>
+          • Extranjeros: Hasta 50%
+        </div>
+      </div>
+
+      <div class="resultado">
+        <strong>Requisitos de crédito:</strong>
+        <div class="leyenda">
+          • FHA: 580+ crédito<br>
+          • VA: 620+ crédito<br>
+          • Convencional: 620+ crédito<br>
+          • Extranjeros: Sin historial en USA (se evalúa internacional)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calcular() {
+      const tipoPrestamo = document.getElementById("tipoPrestamo").value;
+      const ingresos = parseFloat(document.getElementById("ingresos").value);
+      const deudas = parseFloat(document.getElementById("deudas").value);
+      const monto = parseFloat(document.getElementById("monto").value);
+      const tasa = parseFloat(document.getElementById("tasa").value);
+      const plazo = parseFloat(document.getElementById("plazo").value);
+
+      // Cálculo pago hipoteca (P&I)
+      const tasaMensual = tasa / 12 / 100;
+      const plazoMeses = plazo * 12;
+      const pagoHipoteca = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazoMeses));
+
+      // Estimación taxes (1%) y seguro (0.5%)
+      const valorCasa = monto / 0.80; // Asume 20% de down payment
+      const taxes = (valorCasa * 0.01) / 12; // 1% anual
+      const seguro = (valorCasa * 0.005) / 12; // 0.5% anual
+      const pagoTotal = pagoHipoteca + taxes + seguro;
+
+      // DTI máximo según tipo de préstamo
+      const dtiMaximo = {
+        "FHA": 0.43,
+        "VA": 0.41, // Ejemplo conservador
+        "Convencional": 0.45,
+        "Extranjero": 0.50
+      }[tipoPrestamo];
+
+      const dtiActual = (deudas / ingresos * 100).toFixed(1);
+      const dtiTotal = ((deudas + pagoTotal) / ingresos * 100).toFixed(1);
+      const ingresoMinimo = ((deudas + pagoTotal) / dtiMaximo).toFixed(2);
+
+      // Mostrar resultados
+      document.getElementById("pago").textContent = pagoTotal.toFixed(2);
+      document.getElementById("dtiActual").textContent = dtiActual;
+      document.getElementById("dtiTotal").textContent = dtiTotal;
+      document.getElementById("ingresoMinimo").textContent = ingresoMinimo;
+    }
+  </script>
+</body>
+</html>
